@@ -9,9 +9,11 @@ only) copies the image in this repository, `entry.png`, to
 
 A single original artwork made for this bounty: a colossal glowing
 jellyfish, the size of a skyscraper, drifting low over a tiny coastal town
-at dusk, its bioluminescent tendrils lighting the streets below. One
-subject, huge scale contrast, one moment of awe — built to hit the judge's
-five criteria in order:
+at dusk, its bioluminescent tendrils lighting the streets below. It is
+stored as `entry.png` at 1024×1024 px, 351,738 bytes (JPEG bytes under a
+`.png` name, which the kit rules allow explicitly). One subject, huge
+scale contrast, one moment of awe — built to hit the judge's five
+criteria in order:
 
 1. **It excites you** — a giant luminous creature over a tiny town is a
    jolt at first glance, not a calm scene.

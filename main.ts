@@ -1,4 +1,13 @@
-// ai-excited-01 entry — "The Night the Sea Flew" (working title).
+// ai-excited-01 entry — "The Night the Sea Flew".
+//
+// The final image: a colossal glowing jellyfish drifting low over a
+// tiny coastal town at dusk (the winning candidate of five generated
+// and judged in this build session; the four unchosen candidates were
+// kept out of this repository). It is stored as entry.png at
+// 1024x1024 px, 351,738 bytes — JPEG bytes under a .png name, which
+// the rules allow explicitly (the format is told apart by the first
+// bytes). No text inside the image, no artefacts, one dominant shape
+// that still reads at ~300 px.
 //
 // What this program does, in one sentence: it copies the image this
 // repository holds (entry.png, next to this file) to the output path
@@ -30,7 +39,7 @@
 // The copy below is the whole program; everything else in this file
 // is commentary so a reader can see the intent at a glance.
 
-import { copyFileSync, existsSync, mkdirSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, statSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -57,3 +66,10 @@ if (!existsSync(source)) {
 // same bytes out, on every run, on every machine.
 mkdirSync(outputDir, { recursive: true });
 copyFileSync(source, target);
+
+// Guard against a silent empty output: the gate reads exactly the
+// bytes in this file, so a zero-byte copy must fail loudly here
+// instead of reaching the judge as a blank image.
+if (statSync(target).size === 0) {
+  throw new Error(`copied entry image is empty: ${target}`);
+}
