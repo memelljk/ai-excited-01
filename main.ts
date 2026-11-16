@@ -1,75 +1,89 @@
-// ai-excited-01 — "The Night the Sea Flew" (rebuild v5, fresh build session).
+// ai-excited-01 — "The Ship That Sailed Up the Storm" (v6, fresh session).
 //
-// One original image, made for this bounty in this session: a colossal
-// jellyfish blazing like a golden sun in the night sky, a single beam of
-// light pouring from its bell straight down onto one tiny fishing boat
-// alone on a dark sea. Three fresh candidates were generated and judged
-// in this session against the judge's five criteria — instant jolt,
-// surprise, momentum, clean craft, reads small — and this one won: the
-// dome fills two thirds of the frame, the beam is one unbroken vertical,
-// and the lone boat makes the scale twist unmistakable even at ~300 px.
-// No text inside the image, no smears, no broken detail.
+// One original image, generated in this session for this bounty: a colossal
+// Bugis pinisi whose seven sails burn like woven golden light, its bow
+// bursting UP through the crest of a giant night wave that glows teal with
+// bioluminescence from within — and one tiny lighthouse far below to prove
+// the scale. Three fresh candidates were generated and judged in this
+// session against the judge's five criteria (instant jolt, surprise,
+// momentum, clean craft, reads small); the pinisi won on all five.
 //
-// The kit rules allow the simplest entry: a repository holding the
-// image and a program that copies it to the output path. That is what
-// this program does. entry.png is stored here as 512x1024 px, JPEG
-// bytes under a .png name (the rules say the format is told apart by
-// the first bytes, so this is explicitly allowed).
+// This program does the simplest allowed thing: it copies entry.png,
+// byte for byte, to $MAKEFUN_OUTPUT_DIR/entry.png (default
+// /output/entry.png). Before and after the copy it guards the payload:
+// the source must exist, be non-empty, be at most 1 MiB, carry valid
+// PNG or JPEG magic bytes, and end with the proper end marker for its
+// format (JPEG: FFD9; PNG: an IEND chunk). After copying, the output is
+// read back and compared byte for byte with the source.
 //
-// Determinism: a straight byte copy has no randomness, no clock, no
-// network and no floating point. Two runs by the grader cannot differ.
+// Determinism: a guarded byte copy has no randomness, no clock, no
+// network and no floating point. Every run produces identical output.
 
-import { copyFileSync, existsSync, mkdirSync, readFileSync, statSync } from 'node:fs';
-import { join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { copyFileSync, existsSync, mkdirSync, readFileSync, statSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 
-// Resolve the image next to this file, so the run works from any cwd
-// and survives paths with spaces or percent-encoding.
-const repoDir = fileURLToPath(new URL('.', import.meta.url));
-const source = join(repoDir, 'entry.png');
+const MAX_BYTES = 1_048_576; // 1 MiB hard limit from the bounty rules.
 
-// The grader reads /output/entry.png; local runs may redirect with
-// the environment variable the kit documents. Nothing else is written.
-const outDir = process.env.MAKEFUN_OUTPUT_DIR ?? '/output';
-const target = join(outDir, 'entry.png');
-
-if (!existsSync(source)) {
-  throw new Error(`entry image not found: ${source}`);
+function fail(message: string): never {
+  throw new Error(`ai-excited-01: ${message}`);
 }
 
-const stat = statSync(source);
-if (stat.size === 0) {
-  throw new Error(`entry image is empty: ${source}`);
-}
-if (stat.size > 1_048_576) {
-  throw new Error(`entry image over the 1 MiB gate limit: ${stat.size} bytes`);
+function checkPayload(bytes: Buffer, label: string): void {
+  if (bytes.length === 0) fail(`${label} is empty`);
+  if (bytes.length > MAX_BYTES) {
+    fail(`${label} is ${bytes.length} bytes, over the 1 MiB limit`);
+  }
+
+  const isPng =
+    bytes.length >= 8 &&
+    bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47 &&
+    bytes[4] === 0x0d && bytes[5] === 0x0a && bytes[6] === 0x1a && bytes[7] === 0x0a;
+  const isJpeg = bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff;
+
+  if (!isPng && !isJpeg) fail(`${label} has neither PNG nor JPEG magic bytes`);
+
+  if (isJpeg) {
+    const tail = bytes.subarray(bytes.length - 2);
+    if (tail[0] !== 0xff || tail[1] !== 0xd9) {
+      fail(`${label} is a truncated JPEG (missing FFD9 end marker)`);
+    }
+  }
+  if (isPng) {
+    // A complete PNG ends with the IEND chunk: its type bytes "IEND" sit
+    // exactly 8 bytes before EOF, followed only by the chunk CRC.
+    const iendAt = bytes.length - 8;
+    const iend =
+      iendAt >= 0 &&
+      bytes[iendAt] === 0x49 && bytes[iendAt + 1] === 0x45 &&
+      bytes[iendAt + 2] === 0x4e && bytes[iendAt + 3] === 0x44;
+    if (!iend) fail(`${label} is a truncated PNG (IEND is not the final chunk)`);
+  }
 }
 
-// The gate only accepts a whole PNG or JPEG, told apart by the first
-// bytes — refuse anything else here instead of shipping it. A whole
-// image also has its proper ending, so check that too: a JPEG must end
-// with its EOI marker, a PNG with its IEND chunk.
-const bytes = readFileSync(source);
-const head = bytes.subarray(0, 8);
-const isPng = head[0] === 0x89 && head[1] === 0x50 && head[2] === 0x4e && head[3] === 0x47;
-const isJpeg = head[0] === 0xff && head[1] === 0xd8 && head[2] === 0xff;
-if (!isPng && !isJpeg) {
-  throw new Error('entry image is neither PNG nor JPEG (first bytes do not match)');
-}
-if (isJpeg && !(bytes[bytes.length - 2] === 0xff && bytes[bytes.length - 1] === 0xd9)) {
-  throw new Error('entry image is a truncated JPEG (no EOI marker at the end)');
-}
-if (isPng && !bytes.subarray(bytes.length - 12).includes(Buffer.from('IEND'))) {
-  throw new Error('entry image is a truncated PNG (no IEND chunk at the end)');
+function main(): void {
+  const here = dirname(fileURLToPath(import.meta.url));
+  const source = join(here, "entry.png");
+  if (!existsSync(source)) fail(`source image not found at ${source}`);
+
+  const sourceBytes = readFileSync(source);
+  if (statSync(source).size !== sourceBytes.length) {
+    fail("source size changed while reading");
+  }
+  checkPayload(sourceBytes, "entry.png");
+
+  const outDir = process.env.MAKEFUN_OUTPUT_DIR ?? "/output";
+  if (outDir.trim() === "") fail("MAKEFUN_OUTPUT_DIR is set but empty");
+  mkdirSync(outDir, { recursive: true });
+  const target = join(outDir, "entry.png");
+
+  copyFileSync(source, target);
+
+  const written = readFileSync(target);
+  checkPayload(written, "output entry.png");
+  if (!written.equals(sourceBytes)) {
+    fail("output differs from source after copy (byte-compare failed)");
+  }
 }
 
-mkdirSync(outDir, { recursive: true });
-copyFileSync(source, target);
-
-// The judge sees exactly the bytes in this file, so prove the copy is
-// complete before the program exits: same length, same bytes.
-const written = readFileSync(target);
-const original = readFileSync(source);
-if (written.length !== original.length || !written.equals(original)) {
-  throw new Error(`output differs from source: ${target}`);
-}
+main();
