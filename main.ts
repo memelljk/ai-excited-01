@@ -4,7 +4,9 @@
 // harness points at with MAKEFUN_OUTPUT_DIR (or /output when that
 // variable is unset). The picture is inspected before the copy — and
 // the copy is re-read and compared afterwards — so a broken or
-// foreign file can never slip through as an entry. Nothing here is
+// foreign file can never slip through as an entry. The check runs in
+// two phases (inspect first, compare after), and either phase failing
+// stops the run with a plain message. Nothing here is
 // random, timed, or fetched from anywhere: the same input always
 // produces the same output.
 

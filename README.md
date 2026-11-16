@@ -79,6 +79,10 @@ the identical file.
   wrong opening bytes is refused, and a missing `entry.png` is refused
   — each exits with code 1 and a guard message naming the problem.
 - `node main.ts` and `bun main.ts` both run cleanly.
+- The guard runs in two phases: the picture is inspected before the
+  copy, and the copy is re-read and compared afterwards — either phase
+  failing stops the run with a plain message, so a broken or foreign
+  file can never slip through as an entry.
 
 ## License
 
