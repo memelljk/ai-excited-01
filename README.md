@@ -55,6 +55,15 @@ and the essentials survive intact: a bright triangular cluster of
 sails, a dark hull silhouette, and a luminous curl beneath it. The
 story still reads in about a second.
 
+## The first three seconds, as a viewer lives them
+
+Second one is all colour and height: gold stacked on teal, rising.
+Second two brings the realisation that the bright shape is a sailing
+ship and that it is travelling up a wave, not across flat water.
+Second three is the lighthouse — the small, quiet detail that turns
+a striking picture into a scene with genuine scale. Excitement that
+keeps unfolding for three seconds is the whole design in miniature.
+
 ## The file itself
 
 - Name in this repository: `entry.png`
@@ -69,9 +78,14 @@ story still reads in about a second.
 
 Running `main.ts` with Node copies the picture into the folder named
 by the `MAKEFUN_OUTPUT_DIR` environment variable, falling back to
-`/output` when that variable is unset. Before anything moves, the
-program confirms the source is present, non-empty and no larger than
-1048576 bytes, and that it genuinely opens and closes like a PNG or
-a JPEG. After the copy lands, it reads the new file back and compares
-it against the original byte by byte, refusing to report success if
-even a single byte disagrees.
+`/output` when that variable is unset.
+
+The checks run twice, once on each side of the copy. Before anything
+moves, the program confirms the source is present, non-empty and no
+larger than 1048576 bytes, and that it genuinely opens and closes
+like a PNG or a JPEG: a PNG must finish with its IEND chunk, a JPEG
+with its FF D9 closing marker. After the copy lands, the new file is
+read back, examined all over again, and compared against the
+original byte by byte. A changed format, a changed length or even a
+single disagreeing byte all end the run with a failure instead of a
+false success message.

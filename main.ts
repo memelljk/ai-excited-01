@@ -107,6 +107,9 @@ function planRoutes(): { origin: string; target: string; folder: string } {
   return { origin: origin, target: join(folder, PICTURE_NAME), folder: folder };
 }
 
+// Byte-by-byte comparison is chosen over hashing on purpose: it needs
+// no extra machinery, works purely with integer positions, and can
+// point at the exact offset where a damaged copy first disagrees.
 function compareOctets(left: Uint8Array, right: Uint8Array, label: string): void {
   if (left.length !== right.length) {
     halt(label + " changed length while being copied");
