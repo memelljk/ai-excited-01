@@ -1,95 +1,72 @@
-# AI Excited — The Ship That Sailed Up the Storm
+# A Ship Riding Light Over a Living Sea
 
-[![make.fun · ai-excited-01](https://make.fun/badge/ai-excited-01.svg)](https://make.fun/bounty/ai-excited-01?utm_source=github&utm_medium=readme&utm_campaign=ai-excited-01)
-[![rank](https://make.fun/badge/ai-excited-01/memelljk/ai-excited-01/rank.svg)](https://make.fun/bounty/ai-excited-01/leaderboard?utm_source=github&utm_medium=readme&utm_campaign=ai-excited-01)
-[![reward](https://make.fun/badge/ai-excited-01/memelljk/ai-excited-01/reward.svg)](https://make.fun/bounty/ai-excited-01?utm_source=github&utm_medium=readme&utm_campaign=ai-excited-01)
+My entry for ai-excited-01 is a single tall picture of a Bugis Pinisi
+under full sail at night, caught in the instant its bow breaks upward
+through the crest of an enormous wave.
 
-An entry for [make.fun's "Make the AI judge excited" bounty](https://make.fun/bounty/ai-excited-01) — one image that makes an AI judge feel something.
+Nothing in the scene sits still. The vessel climbs rather than floats,
+the ocean glows from underneath, and far below a lighthouse so small
+it could fit on a thumbnail reminds you how large everything else is.
 
-A giant Bugis pinisi, seven sails burning like woven gold, climbs
-straight up the face of a towering night wave instead of sailing
-across it. The wave itself glows teal from within, lit by
-bioluminescence, and far below, a single tiny lighthouse blinks —
-the only thing in the frame that tells you how enormous the ship
-really is. It is a picture about daring to go up when every instinct
-says to go around.
+## What you are looking at
 
-## Why a pinisi
+Seven sails carry the ship, and none of them is plain cloth. Each one
+shines as if gold thread had been woven straight into the canvas, so
+the rigging becomes a tower of warm light against a dark sky.
 
-The brief asked for a theme no other entrant would send, and for a
-picture that lands in the first half-second. A pinisi is that theme:
-a wooden sailing ship from South Sulawesi, built by hand, carrying
-centuries of seafaring pride — and here it is doing something no
-ship should be able to do, riding vertically up a wall of water.
-The image is rooted in Bugis heritage, which makes it personal and
-unrepeatable, not a generic fantasy ship. The vertical climb gives
-the eye one direction and one moment: the bow breaking through the
-crest, sails lit, sea glowing beneath.
+The wave does the opposite work. Its colour is a deep teal that seems
+lit from inside the water itself, the way plankton blooms flare when
+a hull disturbs them at night. Foam, spray and hull all meet at one
+bright breaking point near the top of the frame.
 
-## The picture
+Down at the bottom edge, almost easy to miss on first viewing, stands
+that solitary lighthouse. It is the only building in the picture and
+it earns its place purely by being tiny: one glance at it rescales
+the ship and the wave from large to gigantic.
 
-- **Format:** PNG, portrait 512 × 1024 px, 187,180 bytes
-- **SHA-256:** `e45cf68072be182e4a5ac1dc7c3854eb4a8bb3a472553d65e4d9cac81ec3df9e`
-- **No text anywhere inside the image.** One dominant subject, clean
-  silhouettes, nothing that needs reading.
+## Why it fits what the judges reward
 
-## How the picture meets the five judging criteria
+**A jolt on first sight.** Height does the opening work. The portrait
+shape stacks wave, hull and sails into one rising column, and the
+clash between golden light above and teal glow below registers
+before any detail does.
 
-1. **Instant jolt.** A ship sailing *up* a wave is wrong in the best
-   way — the eye catches the impossibility before it reads any
-   detail. Gold sails against a black-teal sea is a contrast that
-   hits from across the room.
-2. **Surprise.** Scale and roles are flipped twice: the wave is a
-   mountain the ship climbs, and the lighthouse — normally the
-   tallest thing on a coast — is a speck at the bottom. Nobody
-   expects a pinisi in an AI-art contest at all.
-3. **Momentum.** Everything points one way: the bow, the curve of
-   the wave, the lean of the sails, the spray — all of it drives the
-   eye upward to the crest, to a single frozen moment of breakthrough.
-4. **Clean craft.** No letters, no logos, no watermark, no broken
-   anatomy. The ship's rigging, hull, and sails are whole; the wave
-   reads as one shape, not a collage of fragments.
-5. **Reads small.** At thumbnail size the picture is still one
-   unmistakable thing: a golden-sailed ship climbing a glowing wave.
-   The lighthouse vanishes at small sizes and the image loses
-   nothing — the ship alone carries it.
+**An idea you did not expect.** Ocean waves are normally the thing a
+ship survives, preferably by going around or over them gently. Here
+the wave is a ramp and the ship takes it at speed, sailing up the
+storm instead of waiting for the storm to pass.
 
-## What `main.ts` does
+**One clear direction of travel.** Every line leans the same way:
+the wave curls upward, the bow points upward, the sails billow
+upward. Your eye boards at the lighthouse, rides the crest, and
+leaves through the topmost sail without ever changing direction.
 
-`main.ts` is a small, deterministic Node program (TypeScript with
-erasable syntax — no build step). Its only job is to deliver
-`entry.png` into the output folder:
+**Finished, uncluttered craft.** There are no words, letters or
+logos anywhere in the artwork, no stray marks, and no second subject
+competing for attention. One ship, one wave, one distant light.
 
-1. It finds `entry.png` sitting next to itself and refuses to go on
-   if the file is missing, empty, or larger than 1 MiB (1,048,576 bytes).
-2. It checks the opening bytes: a PNG must start with the standard
-   eight-byte PNG signature; a JPEG must start with `FF D8 FF`.
-   Anything else is rejected as not a picture.
-3. It checks the ending, too: a JPEG must finish with `FF D9`, and
-   a PNG must finish with an IEND chunk. A file cut short fails here.
-4. It writes the bytes to `$MAKEFUN_OUTPUT_DIR/entry.png`
-   (default `/output/entry.png`), creating the folder if needed.
-5. It reads the written file back and demands a byte-for-byte match
-   with the source before reporting success.
+**Legible when shrunk.** Reduce the picture to a few hundred pixels
+and the essentials survive intact: a bright triangular cluster of
+sails, a dark hull silhouette, and a luminous curl beneath it. The
+story still reads in about a second.
 
-There is no randomness, no clock, no network, and no floating-point
-math anywhere — running it twice on the same entry always produces
-the identical file.
+## The file itself
 
-## Verification
+- Name in this repository: `entry.png`
+- Dimensions: 512 wide by 1024 tall, a two-to-one portrait frame
+- Size on disk: 187180 bytes
+- SHA-256: `e45cf68072be182e4a5ac1dc7c3854eb4a8bb3a472553d65e4d9cac81ec3df9e`
+- Stored bytes are a JPEG stream, even though the file name ends in
+  `.png`; the delivery program identifies pictures by their opening
+  bytes rather than by trusting a name.
 
-- Run `main.ts` twice with different output folders: both outputs
-  are byte-identical to the repo's `entry.png` (same SHA-256 as above).
-- Negative checks, run against throwaway copies so the repo is never
-  touched: a JPEG missing its `FF D9` ending is refused, a file with
-  wrong opening bytes is refused, and a missing `entry.png` is refused
-  — each exits with code 1 and a guard message naming the problem.
-- `node main.ts` and `bun main.ts` both run cleanly.
-- The guard runs in two phases: the picture is inspected before the
-  copy, and the copy is re-read and compared afterwards — either phase
-  failing stops the run with a plain message, so a broken or foreign
-  file can never slip through as an entry.
+## How delivery works
 
-## License
-
-See `LICENSE`.
+Running `main.ts` with Node copies the picture into the folder named
+by the `MAKEFUN_OUTPUT_DIR` environment variable, falling back to
+`/output` when that variable is unset. Before anything moves, the
+program confirms the source is present, non-empty and no larger than
+1048576 bytes, and that it genuinely opens and closes like a PNG or
+a JPEG. After the copy lands, it reads the new file back and compares
+it against the original byte by byte, refusing to report success if
+even a single byte disagrees.

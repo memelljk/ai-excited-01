@@ -1,110 +1,146 @@
-// ai-excited-01 — entry shipper, ninth draft.
+// Publisher for the ai-excited-01 artwork.
 //
-// One job only: carry entry.png, byte for byte, into the folder the
-// harness points at with MAKEFUN_OUTPUT_DIR (or /output when that
-// variable is unset). The picture is inspected before the copy — and
-// the copy is re-read and compared afterwards — so a broken or
-// foreign file can never slip through as an entry. The check runs in
-// two phases (inspect first, compare after), and either phase failing
-// stops the run with a plain message. Nothing here is
-// random, timed, or fetched from anywhere: the same input always
-// produces the same output.
+// Job in one sentence: take the picture that lives next to this file,
+// prove that it is a well-formed image within the size allowance, place
+// an exact duplicate into the output folder, then prove the duplicate
+// matches the original octet by octet.
+//
+// The program is intentionally boring and repeatable. It consults no
+// clock, draws no random numbers, opens no network connection and does
+// no fractional arithmetic, so the same input always yields the same
+// output and the same verdict.
 
-import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-// A single picture may not be larger than one mebibyte.
-const BYTE_CAP = 1048576;
+type PictureKind = "png-picture" | "jpeg-picture";
 
-// The opening bytes every genuine PNG file carries.
-const PNG_OPEN = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
-// The opening bytes every genuine JPEG file carries.
-const JPEG_OPEN = [0xff, 0xd8, 0xff];
-// The four letters naming the closing chunk of a PNG file.
-const PNG_CLOSE = [0x49, 0x45, 0x4e, 0x44];
-// The two bytes that close a JPEG file.
-const JPEG_CLOSE = [0xff, 0xd9];
+const OCTET_CEILING: number = 1048576;
+const FALLBACK_FOLDER: string = "/output";
+const PICTURE_NAME: string = "entry.png";
 
-type PictureKind = "png" | "jpeg";
+const PNG_OPENING: readonly number[] = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
+const JPEG_OPENING: readonly number[] = [0xff, 0xd8, 0xff];
+const JPEG_CLOSING: readonly number[] = [0xff, 0xd9];
+const PNG_IEND_TRAILER: readonly number[] = [
+  0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82,
+];
 
-// True when the first bytes of `blob` equal the given `head`.
-function opensWith(blob: Buffer, head: number[]): boolean {
-  if (blob.length < head.length) return false;
-  for (let i = 0; i < head.length; i++) {
-    if (blob[i] !== head[i]) return false;
+function halt(reason: string): never {
+  console.error("entry publisher stopped: " + reason);
+  process.exit(1);
+}
+
+function beginsWith(data: Uint8Array, prefix: readonly number[]): boolean {
+  if (data.length < prefix.length) {
+    return false;
+  }
+  for (let at = 0; at < prefix.length; at += 1) {
+    if (data[at] !== prefix[at]) {
+      return false;
+    }
   }
   return true;
 }
 
-// Work out which picture format `blob` claims to be, or null when it
-// claims to be neither PNG nor JPEG.
-function kindOf(blob: Buffer): PictureKind | null {
-  if (opensWith(blob, PNG_OPEN)) return "png";
-  if (opensWith(blob, JPEG_OPEN)) return "jpeg";
-  return null;
+function finishesWith(data: Uint8Array, suffix: readonly number[]): boolean {
+  if (data.length < suffix.length) {
+    return false;
+  }
+  const offset: number = data.length - suffix.length;
+  for (let at = 0; at < suffix.length; at += 1) {
+    if (data[offset + at] !== suffix[at]) {
+      return false;
+    }
+  }
+  return true;
 }
 
-// True when the tail of the file matches its format: a PNG must end
-// with an IEND chunk (type letters eight bytes from the end), a JPEG
-// must end with the two bytes FF D9.
-function tailIsWhole(blob: Buffer, kind: PictureKind): boolean {
-  if (kind === "jpeg") {
-    return blob.length >= 2 && opensWith(blob.subarray(blob.length - 2), JPEG_CLOSE);
+function recognisePicture(data: Uint8Array, label: string): PictureKind {
+  if (beginsWith(data, PNG_OPENING)) {
+    return "png-picture";
   }
-  if (blob.length < 12) return false;
-  return opensWith(blob.subarray(blob.length - 8, blob.length - 4), PNG_CLOSE);
+  if (beginsWith(data, JPEG_OPENING)) {
+    return "jpeg-picture";
+  }
+  halt(label + " does not start with a PNG or JPEG signature");
 }
 
-// Read the entry picture next to this file, refusing anything that
-// fails any of the checks. Returns the raw bytes on success.
-function fetchEntry(source: string): Buffer {
-  if (!existsSync(source)) {
-    throw new Error(`entry picture is missing: ${source}`);
+function confirmClosing(data: Uint8Array, kind: PictureKind, label: string): void {
+  if (kind === "jpeg-picture") {
+    if (finishesWith(data, JPEG_CLOSING) === false) {
+      halt(label + " is a JPEG that lacks its closing FF D9 marker");
+    }
+    return;
   }
-  const size = statSync(source).size;
-  if (size === 0) {
-    throw new Error("entry picture is empty (0 bytes)");
+  if (finishesWith(data, PNG_IEND_TRAILER) === false) {
+    halt(label + " is a PNG that does not finish with an IEND chunk");
   }
-  if (size > BYTE_CAP) {
-    throw new Error(`entry picture is ${size} bytes, over the ${BYTE_CAP} byte cap`);
-  }
-  const blob = readFileSync(source);
-  const kind = kindOf(blob);
-  if (kind === null) {
-    throw new Error("entry picture is neither a PNG nor a JPEG (opening bytes do not match)");
-  }
-  if (!tailIsWhole(blob, kind)) {
-    throw new Error(`entry picture is a truncated ${kind.toUpperCase()} (closing marker missing)`);
-  }
-  return blob;
 }
 
-// Write `blob` into `targetDir/entry.png`, then read it straight back
-// and demand an exact byte-for-byte match with what was written.
-function placeEntry(blob: Buffer, targetDir: string): string {
-  mkdirSync(targetDir, { recursive: true });
-  const target = join(targetDir, "entry.png");
-  writeFileSync(target, blob);
-  const back = readFileSync(target);
-  if (!back.equals(blob)) {
-    throw new Error("written entry.png does not match the source byte for byte");
+function examinePayload(data: Uint8Array, label: string): PictureKind {
+  if (data.length === 0) {
+    halt(label + " is empty, so there is no picture to publish");
   }
-  return target;
+  if (data.length > OCTET_CEILING) {
+    halt(label + " uses " + data.length + " bytes, above the 1048576 byte allowance");
+  }
+  const kind: PictureKind = recognisePicture(data, label);
+  confirmClosing(data, kind, label);
+  return kind;
 }
 
-function run(): void {
-  const here = dirname(fileURLToPath(import.meta.url));
-  const source = join(here, "entry.png");
-  const targetDir = process.env.MAKEFUN_OUTPUT_DIR ?? "/output";
-  const picture = fetchEntry(source);
-  const target = placeEntry(picture, targetDir);
-  console.log(`entry.png delivered: ${picture.length} bytes -> ${target}`);
+function planRoutes(): { origin: string; target: string; folder: string } {
+  const homeFolder: string = dirname(fileURLToPath(import.meta.url));
+  const origin: string = join(homeFolder, PICTURE_NAME);
+  const requested: string | undefined = process.env.MAKEFUN_OUTPUT_DIR;
+  const folder: string =
+    requested === undefined || requested === "" ? FALLBACK_FOLDER : requested;
+  return { origin: origin, target: join(folder, PICTURE_NAME), folder: folder };
 }
 
-try {
-  run();
-} catch (err) {
-  console.error(`ai-excited-01: ${err instanceof Error ? err.message : String(err)}`);
-  process.exit(1);
+function compareOctets(left: Uint8Array, right: Uint8Array, label: string): void {
+  if (left.length !== right.length) {
+    halt(label + " changed length while being copied");
+  }
+  for (let at = 0; at < left.length; at += 1) {
+    if (left[at] !== right[at]) {
+      halt(label + " differs from the original at byte position " + at);
+    }
+  }
 }
+
+function runPublisher(): void {
+  const routes = planRoutes();
+
+  if (existsSync(routes.origin) === false) {
+    halt("no source picture was found at " + routes.origin);
+  }
+
+  let original: Uint8Array;
+  try {
+    original = readFileSync(routes.origin);
+  } catch {
+    halt("the source picture exists but could not be read");
+  }
+  examinePayload(original, "source picture");
+
+  mkdirSync(routes.folder, { recursive: true });
+  copyFileSync(routes.origin, routes.target);
+
+  let duplicate: Uint8Array;
+  try {
+    duplicate = readFileSync(routes.target);
+  } catch {
+    halt("the copied picture could not be read back for checking");
+  }
+  examinePayload(duplicate, "copied picture");
+  compareOctets(original, duplicate, "copied picture");
+
+  console.log(
+    "published " + duplicate.length + " bytes to " + routes.target + " and verified every byte",
+  );
+}
+
+runPublisher();
