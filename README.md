@@ -14,7 +14,7 @@ Sulawesi — climbing a wave the size of a cliff at night. Its sails are
 not cloth but woven golden light, burning bright against a black storm
 sky. The wave it rides is alive from within, glowing teal with
 bioluminescence, curling under the hull like a second sky tipped upside
-down. And far, far below, at the bottom edge of the frame, sits one tiny
+down. And far, far below, at the bottom left of the frame, sits one tiny
 lighthouse on its rock, beam lit — the single detail that tells you how
 impossibly large everything above it is.
 
@@ -22,10 +22,10 @@ The ship is not fleeing the storm and it is not sinking in it. Its bow
 has already burst UP through the wave's crest. It is sailing the storm
 itself, uphill, and winning.
 
-Stored as `entry.png` at 512×1024 px, 182,392 bytes (JPEG bytes under a
+Stored as `entry.png` at 512×1024 px, 187,180 bytes (JPEG bytes under a
 `.png` name, which the kit rules allow explicitly — the format is told
 apart by the first bytes). sha256:
-`b332e7332c50549f8011f1cafcd7640069a30ddb90b57231bdb953b70778cb81`.
+`e45cf68072be182e4a5ac1dc7c3854eb4a8bb3a472553d65e4d9cac81ec3df9e`.
 
 ## Why it hits the judge's five criteria
 
@@ -51,10 +51,10 @@ apart by the first bytes). sha256:
    shapes: a black-teal wave, a golden ship, a dot of lighthouse. The
    silhouette and the gold-versus-teal contrast survive any thumbnail.
 
-The image was generated fresh in this build session and cropped to the
-512×1024 portrait frame in this session (a right-shifted 1:2 crop of the
+The image was generated fresh in this build session and resized to the
+512×1024 portrait frame in this session (a direct 1:2 downscale of the
 generated artwork, chosen so the lighthouse stays whole at the bottom
-right). No other candidate images are stored in this repository.
+left). No other candidate images are stored in this repository.
 
 ## Run it
 

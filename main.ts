@@ -1,4 +1,4 @@
-// ai-excited-01 — "The Ship That Sailed Up the Storm" (v7, rebuilt in this session).
+// ai-excited-01 — "The Ship That Sailed Up the Storm" (v8, rebuilt in this session).
 //
 // The artwork in this repository is an original image generated fresh in
 // this build session for this bounty: a colossal Bugis pinisi whose sails
