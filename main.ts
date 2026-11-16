@@ -9,6 +9,13 @@
 // clock, draws no random numbers, opens no network connection and does
 // no fractional arithmetic, so the same input always yields the same
 // output and the same verdict.
+//
+// Guarding happens in two separate phases on purpose. Phase one runs
+// before anything is copied and rejects a missing, empty, oversized or
+// malformed source. Phase two runs on the file that actually landed in
+// the output folder: it repeats the format examination, insists the
+// format stayed the same, and then compares every byte, so a copy that
+// was truncated or altered in transit can never pass as a success.
 
 import { copyFileSync, existsSync, mkdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -124,7 +131,7 @@ function runPublisher(): void {
   } catch {
     halt("the source picture exists but could not be read");
   }
-  examinePayload(original, "source picture");
+  const sourceKind: PictureKind = examinePayload(original, "source picture");
 
   mkdirSync(routes.folder, { recursive: true });
   copyFileSync(routes.origin, routes.target);
@@ -135,7 +142,10 @@ function runPublisher(): void {
   } catch {
     halt("the copied picture could not be read back for checking");
   }
-  examinePayload(duplicate, "copied picture");
+  const copyKind: PictureKind = examinePayload(duplicate, "copied picture");
+  if (copyKind !== sourceKind) {
+    halt("copied picture changed format while being copied");
+  }
   compareOctets(original, duplicate, "copied picture");
 
   console.log(

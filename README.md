@@ -24,6 +24,11 @@ that solitary lighthouse. It is the only building in the picture and
 it earns its place purely by being tiny: one glance at it rescales
 the ship and the wave from large to gigantic.
 
+That delay is deliberate. The eye celebrates the sails first, rides
+the glowing crest second, and only then discovers the lighthouse —
+and the whole scene grows in the imagination at the exact moment the
+smallest object in it is finally noticed.
+
 ## Why it fits what the judges reward
 
 **A jolt on first sight.** Height does the opening work. The portrait
